@@ -104,3 +104,8 @@ minetest.register_globalstep(function(dtime)
       end
    end
 end)
+
+--Register Leave Clearing
+minetest.register_on_leaveplayer(function (player)
+   wcila.huds[player:get_player_name()] = nil
+end)
