@@ -20,11 +20,6 @@ local function wcila_visible(node, player)
    end
 end
 
-local function getFirstTex(tex)
-   tex = string.sub(tex, 1, (string.find(tex, '^', 1, true) or string.len(tex)+1)-1)
-   return tex
-end
-
 --Create WCILA Hud
 local function create_wcila_hud(player)
    local elems = {}
