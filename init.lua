@@ -3,12 +3,21 @@ wcila.huds = {}
 local show_image = true
 
 --Check WCILA Visibility
-local function wcila_visible(node)
+local function wcila_visible(node, player)
+   --Check if the Player is holding down the sneak key, if he is then show all nodes
    if node == "air" then return false end
    local def = minetest.registered_items[node]
-   if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
-   if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
-   return true
+   
+   --To prevent a crash from unknown nodes
+   if def == nil then return false end
+   
+   if player:get_player_control().sneak == false then
+      if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
+      if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
+      return true
+   else
+      return true
+   end
 end
 
 local function getFirstTex(tex) 
@@ -79,10 +88,10 @@ function wcila.update(player)
       zmod = i * math.sin(ver) * math.sin(hor) --y
       ymod = i * math.cos(ver) --z
       name = minetest.get_node({x = loc.x + xmod, y = loc.y + 1.65 + ymod, z = loc.z + zmod}).name
-      if wcila_visible(name) then break end
+      if wcila_visible(name, player) then break end
    end
 
-   if not wcila_visible(name) then name = "" end
+   if not wcila_visible(name, player) then name = "" end
    local display_name = ""
    if name ~= "" and minetest.registered_items[name].description ~= "" then display_name = minetest.registered_items[name].description end
    local s = 0
