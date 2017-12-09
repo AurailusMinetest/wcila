@@ -4,13 +4,13 @@ local show_image = true
 
 --Check WCILA Visibility
 local function wcila_visible(node, player)
-   --Check if the Player is holding down the sneak key, if he is then show all nodes
    if node == "air" then return false end
    local def = minetest.registered_items[node]
    
    --To prevent a crash from unknown nodes
    if def == nil then return false end
    
+   --Check if the Player is holding down the sneak key, if he is then show all nodes
    if player:get_player_control().sneak == false then
       if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
       if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
