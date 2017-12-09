@@ -6,9 +6,9 @@ local show_image = true
 local function wcila_visible(node, player)
    if node == "air" then return false end
    local def = minetest.registered_items[node]
+
    --To prevent a crash from unknown nodes
    if def == nil then return false end
-   print(tostring(minetest.registered_nodes[node].tiles))
 
    --Check if the Player is holding down the sneak key, if he is then show all nodes
    if player:get_player_control().sneak == false then
@@ -21,7 +21,6 @@ local function wcila_visible(node, player)
 end
 
 local function getFirstTex(tex)
-   -- string.sub(tex, 1,
    tex = string.sub(tex, 1, (string.find(tex, '^', 1, true) or string.len(tex)+1)-1)
    return tex
 end
@@ -77,24 +76,16 @@ end
 
 --Detect and show block
 function wcila.update(player)
-   local loc = player:getpos()
-   local hor = math.rad(math.deg(player:get_look_horizontal()) + 90)
-   local ver = math.rad(math.deg(player:get_look_vertical()) + 90)
 
    local name
-   local xmod, ymod, zmod = 0, 0, 0
-   for i = 0,4,0.1 do
-      xmod = i * math.sin(ver) * math.cos(hor)
-      zmod = i * math.sin(ver) * math.sin(hor) --y
-      ymod = i * math.cos(ver) --z
-      name = minetest.get_node({x = loc.x + xmod, y = loc.y + 1.65 + ymod, z = loc.z + zmod}).name
-      if wcila_visible(name, player) then break end
-   end
 
    local dir = player:get_look_dir()
    local pos = vector.add(player:getpos(),{x=0,y=1.625,z=0})
-   local pointed = minetest.raycast(pos, vector.add(pos,vector.multiply(dir,40)),false)
-   print(pointed)
+   local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.5)
+
+   if node_pos == nil then return end
+   name = minetest.get_node(node_pos).name
+   if not wcila_visible(name, player) then return end
 
    if not wcila_visible(name, player) then name = "" end
    local display_name = ""
@@ -114,25 +105,25 @@ function wcila.update(player)
             local tiles = minetest.registered_items[name].tiles
 
             local top = tiles[1]
-            if (type(top) == "table") then top = getFirstTex(top.name) else
-               if top then
-                  top = getFirstTex(top)
-               end
-            end
-            local left = tiles[3]
-            if (type(left) == "table") then left = getFirstTex(left.name) else
-               if left then
-                  left = getFirstTex(left)
-               else left = top end
-            end
-            local right = tiles[5]
-            if (type(right) == "table") then right = getFirstTex(right.name) else
-               if right then
-                  right = getFirstTex(right)
-               else right = left end
+            if (type(top) == "table") then
+              top = top.name
             end
 
-            image = "[inventorycube{" .. top .. "{" .. left .. "{" .. right
+            local left = tiles[3]
+            if (type(left) == "table") then
+              left = left.name
+            else
+              left = top
+            end
+
+            local right = tiles[5]
+            if (type(right) == "table") then
+              right = right.name
+            else
+              right = left
+            end
+
+            image = minetest.inventorycube(top, left, right)
             iscale = 0.3
          else
             image = minetest.registered_items[name].tiles[1]
