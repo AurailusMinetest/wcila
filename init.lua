@@ -4,13 +4,13 @@ local show_image = true
 
 --Check WCILA Visibility
 local function wcila_visible(node, player)
-   --Check if the Player is holding down the sneak key, if he is then show all nodes
    if node == "air" then return false end
    local def = minetest.registered_items[node]
-   
    --To prevent a crash from unknown nodes
    if def == nil then return false end
-   
+   print(tostring(minetest.registered_nodes[node].tiles))
+
+   --Check if the Player is holding down the sneak key, if he is then show all nodes
    if player:get_player_control().sneak == false then
       if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
       if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
@@ -20,8 +20,8 @@ local function wcila_visible(node, player)
    end
 end
 
-local function getFirstTex(tex) 
-   -- string.sub(tex, 1, 
+local function getFirstTex(tex)
+   -- string.sub(tex, 1,
    tex = string.sub(tex, 1, (string.find(tex, '^', 1, true) or string.len(tex)+1)-1)
    return tex
 end
@@ -83,13 +83,18 @@ function wcila.update(player)
 
    local name
    local xmod, ymod, zmod = 0, 0, 0
-   for i = 0,4,0.5 do
+   for i = 0,4,0.1 do
       xmod = i * math.sin(ver) * math.cos(hor)
       zmod = i * math.sin(ver) * math.sin(hor) --y
       ymod = i * math.cos(ver) --z
       name = minetest.get_node({x = loc.x + xmod, y = loc.y + 1.65 + ymod, z = loc.z + zmod}).name
       if wcila_visible(name, player) then break end
    end
+
+   local dir = player:get_look_dir()
+   local pos = vector.add(player:getpos(),{x=0,y=1.625,z=0})
+   local pointed = minetest.raycast(pos, vector.add(pos,vector.multiply(dir,40)),false)
+   print(pointed)
 
    if not wcila_visible(name, player) then name = "" end
    local display_name = ""
@@ -103,11 +108,11 @@ function wcila.update(player)
    if minetest.registered_items[name] and minetest.registered_items[name].tiles then
       if minetest.registered_items[name].tiles[1] and type(minetest.registered_items[name].tiles[1]) ~= "table" then
          local dt = minetest.registered_items[name].drawtype
-         if dt == "normal" or dt == "allfaces" or dt == "allfaces_optional" 
-         or dt == "glasslike" or dt =="glasslike_framed" or dt == "glasslike_framed_optional" 
+         if dt == "normal" or dt == "allfaces" or dt == "allfaces_optional"
+         or dt == "glasslike" or dt =="glasslike_framed" or dt == "glasslike_framed_optional"
          or dt == "liquid" or dt == "flowingliquid" then
-            local tiles = minetest.registered_items[name].tiles 
-            
+            local tiles = minetest.registered_items[name].tiles
+
             local top = tiles[1]
             if (type(top) == "table") then top = getFirstTex(top.name) else
                if top then
@@ -126,7 +131,7 @@ function wcila.update(player)
                   right = getFirstTex(right)
                else right = left end
             end
-            
+
             image = "[inventorycube{" .. top .. "{" .. left .. "{" .. right
             iscale = 0.3
          else
@@ -143,7 +148,7 @@ function wcila.update(player)
       player:hud_change(elems.tooltip, "text", display_name)
       player:hud_change(elems.technical, "text", name)
       player:hud_change(elems.technical, "offset", {x = 20, y = techoff})
-      player:hud_change(elems.img, "text", tostring(image)) 
+      player:hud_change(elems.img, "text", tostring(image))
       player:hud_change(elems.img, "scale", {x = s * 2.5 * iscale, y = s * 2.5 * iscale})
    end
 end
