@@ -76,6 +76,7 @@ function wcila.update(player)
 
    local dir = player:get_look_dir()
    local pos = vector.add(player:getpos(),{x=0,y=1.625,z=0})
+   --TODO Use raycast instead of line of sight to get more accurate results.
    local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.5)
 
    if node_pos == nil then return end
