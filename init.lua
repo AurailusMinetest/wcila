@@ -6,8 +6,9 @@ local show_image = true
 local function wcila_visible(node)
    if node == "air" then return false end
    local def = minetest.registered_items[node]
-   if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
-   if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
+   if not def then return false end
+   if def.drawtype == "airlike" then return false end
+   if def.groups.not_wcila_visible and def.groups.not_wcila_visible ~= 0 then return false end
    return true
 end
 
@@ -39,7 +40,7 @@ local function create_wcila_hud(player)
       offset = {x = 20, y = 22},
       direction = 0,
       name = "WAILA Display Nmae",
-      text = display_name,
+      text = "",
    })
    elems.technical = player:hud_add({
       hud_elem_type = "text",
@@ -50,12 +51,12 @@ local function create_wcila_hud(player)
       offset = {x = 20, y = 42},
       direction = 0,
       name = "WAILA Technical Name",
-      text = name,
+      text = "",
    })
    elems.img = player:hud_add({
       hud_elem_type = "image",
       position = {x = 0.5, y = 0},
-      scale = {x = s, y = s},
+      scale = {x = 0, y = 0},
       name = "WAILA Block Image",
       text = "",
       alignment = 0,
