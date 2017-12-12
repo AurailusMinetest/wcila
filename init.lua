@@ -3,14 +3,18 @@ wcila.huds = {}
 local show_image = true
 
 --Check WCILA Visibility
-local function wcila_visible(node, player)
+local function wcila_visible(node, nodepos, player)
+   if vector.distance(player:getpos(), nodepos) > 5 then
+      return false
+   end
+
    if node == "air" then return false end
    local def = minetest.registered_items[node]
 
    --To prevent a crash from unknown nodes
    if def == nil then return false end
 
-   --Check if the Player is holding down the sneak key, if he is then show all nodes
+   --Check if the Player is holding down the sneak key, if they are then show all nodes
    if player:get_player_control().sneak == false then
       if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
       if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
@@ -41,7 +45,7 @@ local function create_wcila_hud(player)
       alignment = 0,
       offset = {x = 20, y = 22},
       direction = 0,
-      name = "WAILA Display Nmae",
+      name = "WAILA Display Name",
       text = "",
    })
    elems.technical = player:hud_add({
@@ -71,19 +75,20 @@ end
 
 --Detect and show block
 function wcila.update(player)
-
    local name
-
    local dir = player:get_look_dir()
    local pos = vector.add(player:getpos(),{x=0,y=1.625,z=0})
-   --TODO Use raycast instead of line of sight to get more accurate results.
-   local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.5)
 
-   if node_pos == nil then return end
-   name = minetest.get_node(node_pos).name
-   if not wcila_visible(name, player) then return end
+   --TODO check if raycast is implemented yet
+   local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.3)
 
-   if not wcila_visible(name, player) then name = "" end
+   if node_pos == nil then 
+      name = "";
+   else
+      name = minetest.get_node(node_pos).name
+   end
+
+   if not wcila_visible(name, node_pos, player) then name = "" end
    local display_name = ""
    if name ~= "" and minetest.registered_items[name].description ~= "" then display_name = minetest.registered_items[name].description end
    local s = 0
@@ -93,7 +98,7 @@ function wcila.update(player)
    if display_name == "" then techoff = 32 end
    local image = ""
    if minetest.registered_items[name] and minetest.registered_items[name].tiles then
-      if minetest.registered_items[name].tiles[1] and type(minetest.registered_items[name].tiles[1]) ~= "table" then
+      if minetest.registered_items[name].tiles[1] then
          local dt = minetest.registered_items[name].drawtype
          if dt == "normal" or dt == "allfaces" or dt == "allfaces_optional"
          or dt == "glasslike" or dt =="glasslike_framed" or dt == "glasslike_framed_optional"
@@ -101,23 +106,13 @@ function wcila.update(player)
             local tiles = minetest.registered_items[name].tiles
 
             local top = tiles[1]
-            if (type(top) == "table") then
-              top = top.name
-            end
-
+            if (type(top) == "table") then top = top.name end
             local left = tiles[3]
-            if (type(left) == "table") then
-              left = left.name
-            else
-              left = top
-            end
-
+            if (type(left) == "table") then left = left.name
+            else left = top end
             local right = tiles[5]
-            if (type(right) == "table") then
-              right = right.name
-            else
-              right = left
-            end
+            if (type(right) == "table") then right = right.name
+            else right = left end
 
             image = minetest.inventorycube(top, left, right)
             iscale = 0.3
@@ -142,7 +137,7 @@ end
 
 -- Register Update
 local time = 0
-local incr = 0.15
+local incr = 0.1
 minetest.register_globalstep(function(dtime)
    time = time + dtime
    if time > incr then

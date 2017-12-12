@@ -1,6 +1,4 @@
-# WCILA
-"What Can I Look At"
-A Minetest mod that imitates the Minecraft Mod WAILA.
-
-- Depends on default.
-- Extract and rename to `wcila`, and put it into the mods folder.
+# WCILA ("What Can I Look At")
+ 
+WCILA is Minetest mod that imitates the Minecraft Mod WAILA.
+Shows node names and itemstrings when looking at them. More information might be added in the future.
