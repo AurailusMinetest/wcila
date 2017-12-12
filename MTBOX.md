@@ -11,6 +11,7 @@ Otherwise, a 2D Texture will be used.
 ![Icicle](https://github.com/Aurailus/wcila/raw/master/mtbox/icicle.jpg)
 
 Liquid nodes can be seen if you are sneaking, otherwise, they are invisible.
-WCILA only depends on default, and is unlikely to cause much lag on a server, so try it out!
 
 ![Water](https://github.com/Aurailus/wcila/raw/master/mtbox/water.jpg)
+
+WCILA only depends on default, and is unlikely to cause much lag on a server, so try it out!

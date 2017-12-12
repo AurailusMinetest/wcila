@@ -86,9 +86,9 @@ function wcila.update(player)
       name = "";
    else
       name = minetest.get_node(node_pos).name
+      if not wcila_visible(name, node_pos, player) then name = "" end
    end
 
-   if not wcila_visible(name, node_pos, player) then name = "" end
    local display_name = ""
    if name ~= "" and minetest.registered_items[name].description ~= "" then display_name = minetest.registered_items[name].description end
    local s = 0
@@ -108,11 +108,11 @@ function wcila.update(player)
             local top = tiles[1]
             if (type(top) == "table") then top = top.name end
             local left = tiles[3]
-            if (type(left) == "table") then left = left.name
-            else left = top end
+            if not left then left = top end
+            if (type(left) == "table") then left = left.name end
             local right = tiles[5]
-            if (type(right) == "table") then right = right.name
-            else right = left end
+            if not right then right = left end
+            if (type(right) == "table") then right = right.name end
 
             image = minetest.inventorycube(top, left, right)
             iscale = 0.3
