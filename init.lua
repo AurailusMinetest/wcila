@@ -9,19 +9,23 @@ local function wcila_visible(node, nodepos, player)
    end
 
    if node == "air" then return false end
-   local def = minetest.registered_items[node]
 
    --To prevent a crash from unknown nodes
+   local def = minetest.registered_items[node]
    if def == nil then return false end
 
+   --Don't show air!
+   if def.drawtype == "airlike" then return false end
+
    --Check if the Player is holding down the sneak key, if they are then show all nodes
-   if player:get_player_control().sneak == false then
-      if def.drawtype == "airlike" or def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
-      if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
-      return true
-   else
-      return true
+   if not player:get_player_control().sneak then
+       if def.drawtype == "liquid" def.drawtype == "flowingliquid" then return false end
    end
+
+   --Make sure the node hasn't asked to be invisible
+   if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
+   
+   return true
 end
 
 --Create WCILA Hud
@@ -31,7 +35,7 @@ local function create_wcila_hud(player)
       hud_elem_type = "image",
       position = {x = 0.5, y = 0},
       scale = {x = 0, y = 0},
-      name = "WAILA Background",
+      name = "WCILA Background",
       text = "wcila_bg.png",
       alignment = 0,
       offset = {x = 0, y = 34},
@@ -45,7 +49,7 @@ local function create_wcila_hud(player)
       alignment = 0,
       offset = {x = 20, y = 22},
       direction = 0,
-      name = "WAILA Display Name",
+      name = "WCILA Display Name",
       text = "",
    })
    elems.technical = player:hud_add({
@@ -56,14 +60,14 @@ local function create_wcila_hud(player)
       alignment = 0,
       offset = {x = 20, y = 42},
       direction = 0,
-      name = "WAILA Technical Name",
+      name = "WCILA Technical Name",
       text = "",
    })
    elems.img = player:hud_add({
       hud_elem_type = "image",
       position = {x = 0.5, y = 0},
       scale = {x = 0, y = 0},
-      name = "WAILA Block Image",
+      name = "WCILA Block Image",
       text = "",
       alignment = 0,
       offset = {x = -(100 / 2 * 3), y = 32.5},
@@ -79,7 +83,7 @@ function wcila.update(player)
    local dir = player:get_look_dir()
    local pos = vector.add(player:getpos(),{x=0,y=1.625,z=0})
 
-   --TODO check if raycast is implemented yet
+   --TODO Go back to old method, it gives more flexibility
    local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.3)
 
    if node_pos == nil then 
