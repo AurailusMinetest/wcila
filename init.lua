@@ -19,7 +19,7 @@ local function wcila_visible(node, nodepos, player)
 
    --Check if the Player is holding down the sneak key, if they are then show all nodes
    if not player:get_player_control().sneak then
-       if def.drawtype == "liquid" def.drawtype == "flowingliquid" then return false end
+       if def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
    end
 
    --Make sure the node hasn't asked to be invisible
