@@ -3,28 +3,21 @@ wcila.huds = {}
 local show_image = true
 
 --Check WCILA Visibility
-local function wcila_visible(node, nodepos, player)
-   if vector.distance(player:getpos(), nodepos) > 5 then
-      return false
-   end
-
-   if node == "air" then return false end
-
+local function wcila_visible(node, player)
    --To prevent a crash from unknown nodes
    local def = minetest.registered_items[node]
    if def == nil then return false end
 
    --Don't show air!
-   if def.drawtype == "airlike" then return false end
+   if def.name == "air" then return false end
 
    --Check if the Player is holding down the sneak key, if they are then show all nodes
    if not player:get_player_control().sneak then
-       if def.drawtype == "liquid" or def.drawtype == "flowingliquid" then return false end
+       if def.drawtype == "liquid" or def.drawtype == "flowingliquid" or def.drawtype == "airlike" then return false end
    end
 
-   --Make sure the node hasn't asked to be invisible
-   if def.groups.not_wcila_visible and defs.groups.not_wcila_visible ~= 0 then return false end
-   
+   --Make sure the node hasn't requested to be hidden
+   if def.groups.not_wcila_visible and def.groups.not_wcila_visible ~= 0 then return false end
    return true
 end
 
@@ -38,7 +31,7 @@ local function create_wcila_hud(player)
       name = "WCILA Background",
       text = "wcila_bg.png",
       alignment = 0,
-      offset = {x = 0, y = 34},
+      offset = {x = 0, y = 40},
       direction = 0
    })
    elems.tooltip = player:hud_add({
@@ -47,7 +40,7 @@ local function create_wcila_hud(player)
       scale = {x = 100, y = 100},
       number = 0xFFFFFF,
       alignment = 0,
-      offset = {x = 20, y = 22},
+      offset = {x = 30, y = 26},
       direction = 0,
       name = "WCILA Display Name",
       text = "",
@@ -58,7 +51,7 @@ local function create_wcila_hud(player)
       scale = {x = 100, y = 100},
       number = 0xCCCCCC,
       alignment = 0,
-      offset = {x = 20, y = 42},
+      offset = {x = 30, y = 46},
       direction = 0,
       name = "WCILA Technical Name",
       text = "",
@@ -70,7 +63,7 @@ local function create_wcila_hud(player)
       name = "WCILA Block Image",
       text = "",
       alignment = 0,
-      offset = {x = -(100 / 2 * 3), y = 32.5},
+      offset = {x = -(100 / 2 * 3), y = 37},
       direction = 0
    })
 
@@ -84,22 +77,21 @@ function wcila.update(player)
    local pos = vector.add(player:getpos(),{x=0,y=1.625,z=0})
 
    --TODO Go back to old method, it gives more flexibility
-   local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.3)
+   -- local has_sight, node_pos = minetest.line_of_sight(pos, vector.add(pos,vector.multiply(dir,40)),0.3)
 
-   if node_pos == nil then 
-      name = "";
-   else
-      name = minetest.get_node(node_pos).name
-      if not wcila_visible(name, node_pos, player) then name = "" end
+   local ray = minetest.raycast(pos, vector.add(pos,vector.multiply(dir,4)), false, true)
+   local name = ""
+   for pointed_thing in ray do
+      local cname = minetest.get_node(pointed_thing.under).name
+      if wcila_visible(cname, player) then name = cname break end
    end
 
    local display_name = ""
    if name ~= "" and minetest.registered_items[name].description ~= "" then display_name = minetest.registered_items[name].description end
    local s = 0
-   local techoff = 42
-   local iscale = 1
+   local techoff = 48
    if name ~= "" then s = 1 end
-   if display_name == "" then techoff = 32 end
+   if display_name == "" then techoff = 38 end
    local image = ""
    if minetest.registered_items[name] and minetest.registered_items[name].tiles then
       if minetest.registered_items[name].tiles[1] then
@@ -119,9 +111,12 @@ function wcila.update(player)
             if (type(right) == "table") then right = right.name end
 
             image = minetest.inventorycube(top, left, right)
-            iscale = 0.3
          else
-            image = minetest.registered_items[name].tiles[1]
+            image = minetest.registered_items[name].inventory_image
+            if not image then image = minetest.registered_items[name].tiles[1] end
+            if image and image ~= "" then
+               image = image .. "^[resize:64x64"
+            end
          end
       end
    end
@@ -133,9 +128,9 @@ function wcila.update(player)
       player:hud_change(elems.bg, "scale", {x = s * 3, y = s * 3})
       player:hud_change(elems.tooltip, "text", display_name)
       player:hud_change(elems.technical, "text", name)
-      player:hud_change(elems.technical, "offset", {x = 20, y = techoff})
+      player:hud_change(elems.technical, "offset", {x = 30, y = techoff})
       player:hud_change(elems.img, "text", tostring(image))
-      player:hud_change(elems.img, "scale", {x = s * 2.5 * iscale, y = s * 2.5 * iscale})
+      player:hud_change(elems.img, "scale", {x = s * 1, y = s * 1})
    end
 end
 
