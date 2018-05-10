@@ -131,6 +131,7 @@ function wcila.update(player)
       player:hud_change(elems.technical, "offset", {x = 30, y = techoff})
       player:hud_change(elems.img, "text", tostring(image))
       player:hud_change(elems.img, "scale", {x = s * 1, y = s * 1})
+        return name
    end
 end
 
